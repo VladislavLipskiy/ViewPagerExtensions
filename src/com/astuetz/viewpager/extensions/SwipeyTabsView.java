@@ -89,6 +89,9 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
   /** Original direction. */
   private Direction origDirection;
 
+  /** Selected index. */
+  private int selectedIndex;
+  
   public SwipeyTabsView(final Context context) {
     this(context, null);
   }
@@ -175,6 +178,8 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
      mTabsCount = getChildCount();
 
      mPosition = mPager.getCurrentItem();
+     selectedIndex = mPosition;
+     getChildAt(selectedIndex).setSelected(true);
    }
 
    /**
@@ -255,6 +260,19 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
 
    }
 
+   private void higlightTab(final View tab, final int position) {
+     if (tab instanceof SwipeyTab) {
+
+       final int tabCenter = mPositions.get(position).currentPos + tab.getWidth() / 2;
+       final int diff = Math.abs(mCenter - tabCenter);
+       final int p = 100 * diff / mHighlightOffset;
+
+       ((SwipeyTab) tab).setHighlightPercentage(diff <= mHighlightOffset ? 100 - p : 0);
+
+     }
+   }
+   
+   
    /**
     * {@inheritDoc}
     */
@@ -268,21 +286,9 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
        final View tab = getChildAt(i);
        final TabPosition pos = mPositions.get(i);
 
-       if (tab instanceof SwipeyTab) {
+       tab.layout(pos.currentPos, paddingTop, pos.currentPos + pos.width, paddingTop + pos.height);
 
-         final int tabCenter = mPositions.get(i).currentPos
-             + tab.getMeasuredWidth() / 2;
-         final int diff = Math.abs(mCenter - tabCenter);
-         final int p = 100 * diff / mHighlightOffset;
-
-         ((SwipeyTab) tab)
-         .setHighlightPercentage(diff <= mHighlightOffset ? 100 - p
-             : 0);
-
-       }
-
-       tab.layout(pos.currentPos, paddingTop, pos.currentPos + pos.width,
-           paddingTop + pos.height);
+       higlightTab(tab, i);
 
      }
 
@@ -521,6 +527,8 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
         final TabPosition pos = positions.get(i);
 
         tab.offsetLeftAndRight(pos.currentPos - tab.getLeft());
+        
+        higlightTab(tab, i);
       }
       invalidate();
     }
@@ -530,6 +538,11 @@ public class SwipeyTabsView extends RelativeLayout implements OnPageChangeListen
      */
     @Override
     public void onPageSelected(final int position) {
+      View selected = getChildAt(position);
+      View unselected = getChildAt(selectedIndex);
+      selectedIndex = position;
+      selected.setSelected(true);
+      unselected.setSelected(false);
     }
 
     /**
