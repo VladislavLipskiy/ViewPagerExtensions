@@ -16,17 +16,19 @@
 
 package com.astuetz.viewpager.extensions;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.database.DataSetObserver;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.widget.Adapter;
 import android.widget.RelativeLayout;
+
+import java.util.ArrayList;
 
 public class SwipeyTabsView extends RelativeLayout implements
         OnPageChangeListener, OnTouchListener {
@@ -62,7 +64,9 @@ public class SwipeyTabsView extends RelativeLayout implements
 
     private ViewPager mPager;
 
-    private TabsAdapter mAdapter;
+    private Adapter mAdapter;
+
+    private TabsObserver mObserver;
 
     private int mTabsCount = 0;
 
@@ -126,6 +130,14 @@ public class SwipeyTabsView extends RelativeLayout implements
         return 1.0f;
     }
 
+    /** Data observer. */
+    private final class TabsObserver extends DataSetObserver {
+      @Override
+      public void onChanged() {
+        notifyDatasetChanged();
+      }
+    }
+
     /**
      * Notify the view that new data is available.
      */
@@ -137,10 +149,19 @@ public class SwipeyTabsView extends RelativeLayout implements
         }
     }
 
-    public void setAdapter(TabsAdapter adapter) {
-        this.mAdapter = adapter;
+    public void setAdapter(final Adapter adapter) {
+      if (mAdapter != null) {
+        mAdapter.unregisterDataSetObserver(mObserver);
+      }
+      this.mAdapter = adapter;
+      if (mAdapter != null) {
+        if (mObserver == null) {
+          mObserver = new TabsObserver();
+        }
+        mAdapter.registerDataSetObserver(mObserver);
+      }
 
-        if (mPager != null && mAdapter != null) initTabs();
+      if (mPager != null && mAdapter != null) initTabs();
     }
 
     /**
@@ -171,7 +192,7 @@ public class SwipeyTabsView extends RelativeLayout implements
         if (mAdapter == null || mPager == null) return;
 
         for (int i = 0; i < mPager.getAdapter().getCount(); i++) {
-            addTab(mAdapter.getView(i), i);
+            addTab(mAdapter.getView(i, null, this), i);
             mPositions.add(new TabPosition());
         }
 
@@ -237,7 +258,7 @@ public class SwipeyTabsView extends RelativeLayout implements
         final int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(
                 MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST);
         final int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST);
+                MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.EXACTLY);
 
         for (int i = 0; i < mTabsCount; i++) {
             View child = getChildAt(i);
@@ -543,8 +564,8 @@ public class SwipeyTabsView extends RelativeLayout implements
         View selected = getChildAt(position);
         View unselected = getChildAt(mSelectedIndex);
         mSelectedIndex = position;
-        selected.setSelected(true);
-        unselected.setSelected(false);
+        if (selected != null) { selected.setSelected(true); }
+        if (unselected != null) { unselected.setSelected(false); }
     }
 
     /**
