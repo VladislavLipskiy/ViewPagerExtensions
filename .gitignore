@@ -1,3 +1,11 @@
-#Android generated
-bin
-gen
+bin/
+gen/
+build/
+temp/
+
+.idea
+*.iml
+*.ipr
+*.iws
+
+.gradle
