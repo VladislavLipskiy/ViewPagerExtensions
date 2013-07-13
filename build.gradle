@@ -5,6 +5,6 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 15
+    compileSdkVersion 17
     buildToolsVersion '17'
 }
