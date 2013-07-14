@@ -200,7 +200,8 @@ public class SwipeyTabsView extends RelativeLayout implements
 
         mPosition = mPager.getCurrentItem();
         mSelectedIndex = mPosition;
-        getChildAt(mSelectedIndex).setSelected(true);
+        View selectedChild = getChildAt(mSelectedIndex);
+        if (selectedChild != null) { selectedChild.setSelected(true); }
     }
 
     /**
