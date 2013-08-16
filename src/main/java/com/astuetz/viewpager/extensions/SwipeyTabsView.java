@@ -91,7 +91,7 @@ public class SwipeyTabsView extends RelativeLayout implements
     private int mLastOffsetX;
 
     /** Original direction. */
-    private Direction mOrigDirection;
+    private Direction mOrigDirection = Direction.None;
 
     /** Selected index. */
     private int mSelectedIndex;
